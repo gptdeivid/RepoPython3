@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Iniciar sesión</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="C:\Users\cuell\OneDrive\Escritorio\desktoplater3\RepoPython21\static\style.css">
+    <link rel="stylesheet" href="C:\Users\cuell\OneDrive\Escritorio\RepoPython3\static\style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -19,17 +19,28 @@
 
     <div class="container">
         <div class="login-container">
-            <h3>Bienvenido</h3>
+            <h3>Bienvenido <span class="subtitle-pop">¡Estilo Pop Art!</span></h3>
             <form id="login-form" method="POST" action="{{ url_for('do_login') }}">
-                <div class="input-group">
+                <div class="input-group" style="margin-bottom:2.2rem;">
+                    <span class="input-label-bubble">Email</span>
                     <input type="email" name="email" placeholder="Correo electrónico" required>
-                    <i class="fas fa-envelope animated-icon"></i>
+                    <!-- SVG pop-art icon -->
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);z-index:2;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="4" fill="#ffd400" stroke="#111" stroke-width="3"/><path d="M4 6l8 7 8-7" stroke="#ff004d" stroke-width="2.5" fill="none"/></svg>
+                    </span>
                 </div>
-                <div class="input-group">
+                <div class="input-group" style="margin-bottom:2.2rem;">
+                    <span class="input-label-bubble">Clave</span>
                     <input type="password" name="password" placeholder="Contraseña" required>
-                    <i class="fas fa-lock animated-icon"></i>
+                    <!-- SVG pop-art icon -->
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);z-index:2;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="4" fill="#00c851" stroke="#111" stroke-width="3"/><ellipse cx="12" cy="15" rx="2.5" ry="2.5" fill="#ff004d" stroke="#111" stroke-width="2"/><rect x="7" y="6" width="10" height="6" rx="3" fill="#ffd400" stroke="#111" stroke-width="2"/></svg>
+                    </span>
                 </div>
-                <button type="submit" class="btn btn-primary">Entrar</button>
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    Entrar
+                    <span class="btn-explode-particles" id="btn-particles"></span>
+                </button>
             </form>
         </div>
     </div>
@@ -38,10 +49,18 @@
         <div class="spinner"></div>
     </div>
 
-    <div class="toast-notification" id="toast">
-        <i class="fas fa-bell"></i><span id="toast-msg"></span>
+    <div class="bubble-toast-wrapper" id="toast-wrap" style="display:none;">
+        <div class="bubble-toast">
+            <span class="bubble msg" id="toast-msg"></span>
+            <span class="bubble small-a"></span>
+            <span class="bubble small-b"></span>
+            <span class="bubble small-c"></span>
+        </div>
     </div>
 
+    <script type="text/javascript">
+    window.flashMessage = {{ get_flashed_messages()|tojson|safe }};
+    </script>
     <script>
         // Theme switcher
         const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
@@ -70,18 +89,37 @@
             spinner.style.display = 'flex';
         });
 
-        // Toast notifications
-        const toast = document.getElementById('toast');
+        // Pop-art explosion effect on login button
+        const loginBtn = document.getElementById('login-btn');
+        const btnParticles = document.getElementById('btn-particles');
+        loginBtn.addEventListener('click', function(e) {
+            btnParticles.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('span');
+                p.className = 'particle';
+                const angle = (i / 10) * 2 * Math.PI;
+                const tx = Math.cos(angle) * 60 + 'px';
+                const ty = Math.sin(angle) * 30 + 'px';
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
+                p.style.background = ['#ff004d','#ffd400','#00c851','#004dff'][i%4];
+                setTimeout(() => p.classList.add('show'), 10*i);
+                btnParticles.appendChild(p);
+            }
+            setTimeout(() => btnParticles.innerHTML = '', 700);
+        });
+
+        // Bubble toast notifications
+        const toastWrap = document.getElementById('toast-wrap');
         const toastMsg = document.getElementById('toast-msg');
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                toastMsg.textContent = "{{ messages[0] }}";
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            {% endif %}
-        {% endwith %}
-    </script>
+        if (window.flashMessage && window.flashMessage.length > 0) {
+            toastMsg.textContent = window.flashMessage[0];
+            toastWrap.style.display = 'block';
+            document.querySelectorAll('.bubble').forEach(b => b.classList.add('show'));
+            setTimeout(() => {
+                document.querySelectorAll('.bubble').forEach(b => b.classList.remove('show'));
+                toastWrap.style.display = 'none';
+            }, 3000);
+        }
 </body>
 </html>
